@@ -1,6 +1,6 @@
 from datetime import datetime
 from Tracking.iou_tracker import Tracker
-from pyimagesearch.trackableobject import TrackableObject
+# from pyimagesearch.trackableobject import TrackableObject
 from collections import OrderedDict
 from collections import Counter
 
@@ -102,11 +102,15 @@ bee_in = 0
 bee_out = 0
 activity = ""
 
+skip_param = 2
+fps = fps / skip_param
+
 frame = 0
 with detection_graph.as_default():
     with tf.compat.v1.Session(graph=detection_graph) as sess:
         while True:
-            frame += 2
+            frame += skip_param
+
             w_h = tf.constant([width, height, width, height], dtype=tf.float32)
             ret, image_np = cap.read()
             if ret:
@@ -185,8 +189,8 @@ with detection_graph.as_default():
             else:
                 break
 
-            # if frame == 400:
-            #     break
+            if frame == 250:
+                break
 
 
 cap.release()

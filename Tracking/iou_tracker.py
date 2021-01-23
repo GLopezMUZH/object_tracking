@@ -1,6 +1,6 @@
 # import the necessary packages
 from scipy.spatial import distance as dist
-from kalmanFilter import KalmanFilter
+#from kalmanFilter import KalmanFilter
 from collections import OrderedDict
 import numpy as np
 from collections import deque
@@ -11,17 +11,17 @@ np.set_printoptions(linewidth=220)
 class Tracks(object):
     def __init__(self, detection, trackId):
         super(Tracks, self).__init__()
-        self.KF = KalmanFilter()
-        self.KF.predict()
-        self.KF.correct(np.matrix(detection).reshape(2, 1))
+        # self.KF = KalmanFilter()
+        # self.KF.predict()
+        # self.KF.correct(np.matrix(detection).reshape(2, 1))
         self.trace = deque(maxlen=50)
         self.prediction = detection.reshape(1, 2)
         self.trackId = trackId
         self.skipped_frames = 0
 
-    def predict(self, detection):
-        self.prediction = np.array(self.KF.predict()).reshape(1, 2)
-        self.KF.correct(np.matrix(detection).reshape(2, 1))
+    # def predict(self, detection):
+    #     self.prediction = np.array(self.KF.predict()).reshape(1, 2)
+    #     self.KF.correct(np.matrix(detection).reshape(2, 1))
 
 
 
