@@ -18,20 +18,20 @@ import sys
 sys.path.insert(2, '/Users/pascal/Coding/MP_bees/local_tensorflow/models')
 sys.path.insert(3, '/Users/pascal/Coding/MP_bees/local_tensorflow/models/research')
 sys.path.insert(4, '/Users/pascal/Coding/MP_bees/local_tensorflow/models/research/object_detection')
-sys.path.insert(5, '/Users/pascal/Coding/MP_bees/simple_object_tracking')
+sys.path.insert(5, '/Users/pascal/Coding/MP_bees/object_tracking')
 
 from utils import label_map_util
 from utils import visualization_utils as vis_util
 
-DB_PATH = '/Users/pascal/Coding/MP_bees/simple_object_tracking/bees.db'
+DB_PATH = '/Users/pascal/Coding/MP_bees/object_tracking/bees.db'
 # PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/simple_object_tracking/videos/Froh_23_20191013_075648_540_M.mp4'
 #PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/videos/bees_2.mp4'
-PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/simple_object_tracking/videos/118_Doettingen_Hive1_200820_gopro8_1080_200fps_W_short.mp4'
+PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/object_tracking/videos/118_Doettingen_Hive1_200820_gopro8_1080_200fps_W_short.mp4'
 # ALT_PATH_TO_VIDEO = '/content/gdrive/My Drive/Bees/data/Froh_23_20191013_075648_540_M.mp4'
 ALT_PATH_TO_VIDEO = '/content/gdrive/My Drive/Bees/data/high_fps/118_Doettingen_Hive1_200820_gopro8_1080_100fps_W_short.mp4'
 RUN_ID = 28
 PATH_TO_FROZEN_GRAPH = '/Users/pascal/Coding/MP_bees/training_06_04/saved_model/frozen_inference_graph.pb'
-PATH_TO_LABEL_MAP = '/Users/pascal/Coding/MP_bees/simple_object_tracking/data/label_map.pbtxt'
+PATH_TO_LABEL_MAP = '/Users/pascal/Coding/MP_bees/object_tracking/data/label_map.pbtxt'
 NUM_CLASSES = 1
 THRESHOLD = 0.1
 MASK = False
