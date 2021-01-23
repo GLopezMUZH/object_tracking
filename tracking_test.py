@@ -74,7 +74,7 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 dateTimeObj = datetime.now()
 time_stamp = dateTimeObj.strftime("%d_%b_%Y_%H_%M_%S.%f")
 
-outname = 'bee_output_{}_100fps.avi'.format(time_stamp)
+outname = 'output_videos/bee_output_{}.avi'.format(time_stamp)
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
 out = cv2.VideoWriter(outname, fourcc, 10.0, (int(width), int(height)))
 detections = []
