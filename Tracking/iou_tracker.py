@@ -142,7 +142,7 @@ class Tracker():
         else:
             objectIDs = list(self.objects.keys())
             objectCoordinates = list(self.objects.values())
-            D = dist.cdist(np.array(objectCoordinates), inputCoordinates,'chebyshev')
+            D = dist.cdist(np.array(objectCoordinates), inputCoordinates,'euclidean')
             iou_scores = []
             for o in objectCoordinates:
                 iou_scores.append(self.get_iou_score(np.array(o), np.array(inputCoordinates)))

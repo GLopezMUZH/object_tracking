@@ -71,7 +71,7 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 dateTimeObj = datetime.now()
 time_stamp = dateTimeObj.strftime("%d_%b_%Y_%H_%M_%S.%f")
 
-skip_param = 4
+skip_param = 1
 fps = fps / skip_param
 print(fps)
 
