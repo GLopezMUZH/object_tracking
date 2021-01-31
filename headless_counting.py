@@ -3,19 +3,9 @@ from Tracking.iou_tracker import Tracker
 from collections import OrderedDict
 from collections import Counter
 from tqdm import tqdm
-
 import numpy as np
-import tensorflow as tf
 import sqlite3
 import cv2
-import sys
-
-sys.path.insert(2, '/Users/pascal/Coding/MP_bees/local_tensorflow/models')
-sys.path.insert(3, '/Users/pascal/Coding/MP_bees/local_tensorflow/models/research')
-sys.path.insert(4, '/Users/pascal/Coding/MP_bees/local_tensorflow/models/research/object_detection')
-sys.path.insert(5, '/Users/pascal/Coding/MP_bees/object_tracking')
-
-from object_detection.utils import label_map_util
 
 DB_PATH = '/Users/pascal/Coding/MP_bees/object_tracking/bees.db'
 # PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/simple_object_tracking/videos/Froh_23_20191013_075648_540_M.mp4'
@@ -26,28 +16,7 @@ PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/object_tracking/videos/' \
 ALT_PATH_TO_VIDEO = '/content/gdrive/My Drive/Bees/data/high_fps/' \
                     '118_Doettingen_Hive1_200820_gopro8_1080_100fps_W_short.mp4'
 RUN_ID = 28
-PATH_TO_FROZEN_GRAPH = '/Users/pascal/Coding/MP_bees/training_06_04/saved_model/frozen_inference_graph.pb'
-PATH_TO_LABEL_MAP = '/Users/pascal/Coding/MP_bees/object_tracking/data/label_map.pbtxt'
-NUM_CLASSES = 1
-THRESHOLD = 0.1
-MASK = False
-BBOXES = False
-DISTANCE = False
-SHOW = True
-IOU_MATCHING_H = False
 
-detection_graph = tf.Graph()
-with detection_graph.as_default():
-    od_graph_def = tf.compat.v1.GraphDef()
-    with tf.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as fid:
-        serialized_graph = fid.read()
-        od_graph_def.ParseFromString(serialized_graph)
-        tf.import_graph_def(od_graph_def, name='')
-
-label_map = label_map_util.load_labelmap(PATH_TO_LABEL_MAP)
-categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
-                                                            use_display_name=True)
-category_index = label_map_util.create_category_index(categories)
 
 conn = sqlite3.connect(DB_PATH)
 c = conn.cursor()
@@ -60,11 +29,9 @@ def get_coordinates_from_db(run_id, video, frame_nr):
 
 
 ct = Tracker(50, 25, 50, 0.25)
-trackableObjects = {}
-trackers = []
+
 cap = cv2.VideoCapture(PATH_TO_VIDEO)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
-
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 

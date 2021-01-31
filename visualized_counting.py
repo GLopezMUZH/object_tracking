@@ -28,10 +28,9 @@ def get_coordinates_from_db(run_id, video, frame_nr):
 
 
 ct = Tracker(50, 25, 50, 0.25)
-trackableObjects = {}
+
 cap = cv2.VideoCapture(PATH_TO_VIDEO)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
-
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
