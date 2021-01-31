@@ -16,6 +16,7 @@ PATH_TO_VIDEO = '/Users/pascal/Coding/MP_bees/object_tracking/videos/' \
 ALT_PATH_TO_VIDEO = '/content/gdrive/My Drive/Bees/data/high_fps/' \
                     '118_Doettingen_Hive1_200820_gopro8_1080_100fps_W_short.mp4'
 RUN_ID = 28
+PLOT = False
 
 
 conn = sqlite3.connect(DB_PATH)
@@ -69,6 +70,9 @@ activity = ""
 
 frame = 0
 frame_counter = 0
+all_tracks = {}
+in_counted = []
+out_counted = []
 
 c.execute("select max(frame) from coordinates where run_id = {}".format(RUN_ID))
 max_frame = c.fetchall()[0][0]
@@ -82,6 +86,13 @@ for frame in tqdm(range(1, max_frame, skip_param)):
         rects.append([xmin, ymin, xmax, ymax])
 
     objects, tracks = ct.update(rects)
+
+    if PLOT:
+        for key, values in tracks.items():
+            if key not in all_tracks:
+                all_tracks[key] = values
+            else:
+                all_tracks[key].append(values[-1])
 
     for (objectID, coordinates) in objects.items():
         if len(traffic_dict) == 0:
@@ -114,18 +125,51 @@ for frame in tqdm(range(1, max_frame, skip_param)):
                     bee_in += 1
                     traffic_dict[tb_id] = []
                     activity = "Bee {} flew in".format(tb_id)
+                    in_counted.append(tb_id)
                 if tb_value[0] == 1 and total_counter[1] >= fps // 20 and last_counter[-1] >= fps // 20:
                     bee_out += 1
                     traffic_dict[tb_id] = []
                     activity = "Bee {} flew out".format(tb_id)
+                    out_counted.append(tb_id)
 
     info = [("Frame", frame), ("FPS", fps), ("Last activity", activity), ("Nr of Bees", int(len(objects))),
             ("Out", bee_out),
             ("In", bee_in)]
 
-    if frame % 100 == 0:
+    if frame % 1000 == 0:
+        break
         print(info)
+        print(traffic_dict)
 
+
+if PLOT:
+    for cnt in contours:
+        cv2.drawContours(blank_image, [cnt], -1, (36, 255, 12), 2)
+
+
+    disappeared = out_counted + in_counted
+    for id in disappeared:
+        if id in all_tracks.keys():
+            for point in all_tracks[id]:
+                if id in out_counted:
+                    color = (255,0,0)
+                elif id in in_counted:
+                    color = (0,255,0)
+                cv2.circle(blank_image, (point[0], point[1]), 1, color, -1)
+            cv2.putText(blank_image, str(id), (point[0] - 30, point[1] + 30), 0, 0.7,
+                            color, 1)
+            for (i, (k, v)) in enumerate(info):
+                text = "{}: {}".format(k, v)
+                cv2.putText(blank_image, text, (10, int(height) - ((i * 20) + 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                            (0, 0, 0),
+                            1)
+
+
+    import matplotlib.pyplot as plt
+    fig1 = plt.figure()
+    plt.imshow(blank_image)
+    plt.show()
+    fig1.savefig('example.png', dpi = 1000)
 
 print(info)
 conn.close()
