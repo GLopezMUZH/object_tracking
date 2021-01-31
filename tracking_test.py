@@ -166,16 +166,16 @@ with detection_graph.as_default():
                         if tb_id not in objects:
                             last_counter = Counter(tb_value[-20:])
                             total_counter = Counter(tb_value)
-                            if tb_value[0] == -1 and total_counter[-1] >= 10 and last_counter[1] >= 10:
+                            if tb_value[0] == -1 and total_counter[-1] >= fps // 20 and last_counter[1] >= fps // 20:
                                 bee_in += 1
                                 traffic_dict[tb_id] = []
                                 activity = "Bee {} flew in".format(tb_id)
-                            if tb_value[0] == 1 and total_counter[1] >= 10 and last_counter[-1] >= 10:
+                            if tb_value[0] == 1 and total_counter[1] >= fps // 20 and last_counter[-1] >= fps // 20:
                                 bee_out += 1
                                 traffic_dict[tb_id] = []
                                 activity = "Bee {} flew out".format(tb_id)
 
-                info = [("FPS", fps), ("Last activity", activity), ("Nr of Bees", int(len(objects))), ("Out", bee_out),
+                info = [("Frame", frame), ("FPS", fps), ("Last activity", activity), ("Nr of Bees", int(len(objects))), ("Out", bee_out),
                         ("In", bee_in)]
                 # loop over the info tuples and draw them on our frame
                 for (i, (k, v)) in enumerate(info):
@@ -186,6 +186,7 @@ with detection_graph.as_default():
 
                 out.write(cv2.resize(image_np, (int(width), int(height))))
 
+
                 # Display output
                 cv2.imshow('', cv2.resize(image_np, (int(width), int(height))))
                 if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -193,7 +194,7 @@ with detection_graph.as_default():
             else:
                 break
 
-            if frame_counter == 250:
+            if frame_counter == 3:
                 break
 
 cap.release()
