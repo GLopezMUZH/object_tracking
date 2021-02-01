@@ -78,7 +78,6 @@ class Tracker():
     def register(self, coordinates):
         # coordinates in the format [xmin,ymin,xmax,ymax]
         self.objects[self.nextObjectID] = coordinates
-        print("registering {}".format(self.nextObjectID))
         self.objects_trace[self.nextObjectID] = [self.get_centroid(coordinates)]
         self.disappeared[self.nextObjectID] = 0
         self.mixed_up[self.nextObjectID] = 0
@@ -131,7 +130,6 @@ class Tracker():
                 iou_scores = []
 
         else:
-            objectIDs = list(self.objects.keys())
             objectCoordinates = list(self.objects.values())
             if len(inputCoordinates) > len(objectCoordinates):
                 d_row, d_col = linear_sum_assignment(dist.cdist(np.array(objectCoordinates), inputCoordinates,'euclidean'))
@@ -164,12 +162,6 @@ class Tracker():
                     else:
                         order.append(I_order[i])
 
-            # check if new object came in between used cols
-            # if iou_scores.shape[0] < iou_scores.shape[1]:
-                # find new one and register it first and rerun order
-
-
-            print(order)
 
             usedRows = set()
             usedCols = set()
