@@ -78,6 +78,7 @@ class Tracker():
     def register(self, coordinates):
         # coordinates in the format [xmin,ymin,xmax,ymax]
         self.objects[self.nextObjectID] = coordinates
+        print("registering {}".format(self.nextObjectID))
         self.objects_trace[self.nextObjectID] = [self.get_centroid(coordinates)]
         self.disappeared[self.nextObjectID] = 0
         self.mixed_up[self.nextObjectID] = 0
@@ -126,8 +127,18 @@ class Tracker():
                 self.register(inputCoordinates[i])
                 self.trackId += 1
                 self.tracks.append(track)
+                D=[]
+                iou_scores = []
 
         else:
+            objectIDs = list(self.objects.keys())
+            objectCoordinates = list(self.objects.values())
+            if len(inputCoordinates) > len(objectCoordinates):
+                d_row, d_col = linear_sum_assignment(dist.cdist(np.array(objectCoordinates), inputCoordinates,'euclidean'))
+                for i,k in enumerate(inputCoordinates):
+                    if i not in d_col:
+                        self.register(inputCoordinates[i])
+
             objectIDs = list(self.objects.keys())
             objectCoordinates = list(self.objects.values())
             D = dist.cdist(np.array(objectCoordinates), inputCoordinates,'euclidean')
@@ -153,12 +164,21 @@ class Tracker():
                     else:
                         order.append(I_order[i])
 
+            # check if new object came in between used cols
+            # if iou_scores.shape[0] < iou_scores.shape[1]:
+                # find new one and register it first and rerun order
+
+
+            print(order)
+
             usedRows = set()
             usedCols = set()
 
             for col, row in enumerate(order):
                 if row in usedRows or col in usedCols:
                     continue
+
+
 
                 if iou_scores[row, col] >= self.iou_threshold or D[row, col] <= self.dist_threshold:
                     objectID = objectIDs[row]
@@ -167,11 +187,14 @@ class Tracker():
                     self.disappeared[objectID] = 0
                     usedRows.add(row)
                     usedCols.add(col)
+
                 else:
                     pass
 
             unusedRows = set(range(0, iou_scores.shape[0])).difference(usedRows)
             unusedCols = set(range(0, iou_scores.shape[1])).difference(usedCols)
+
+
 
 
             if iou_scores.shape[0] >= iou_scores.shape[1]:
@@ -183,5 +206,7 @@ class Tracker():
             else:
                 for col in unusedCols:
                     self.register(inputCoordinates[col])
-
-        return self.objects, self.objects_trace
+        if len(D)>1:
+            return self.objects, self.objects_trace, D, iou_scores
+        else:
+            return self.objects, self.objects_trace, [],[]

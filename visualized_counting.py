@@ -86,7 +86,7 @@ for frame in tqdm(range(1, max_frame, skip_param)):
             r_id, f_name, fr, b_id, xmin, xmax, ymin, ymax, X, Y, conf = coordinates[i]
             rects.append([xmin, ymin, xmax, ymax])
 
-        objects, tracks = ct.update(rects)
+        objects, tracks, D, iou_scores = ct.update(rects)
 
         for (objectID, coordinates) in objects.items():
             if len(traffic_dict) == 0:
@@ -149,6 +149,8 @@ for frame in tqdm(range(1, max_frame, skip_param)):
         # Display output
         cv2.imshow('', cv2.resize(image_np, (int(width), int(height))))
         if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
+        if frame == 35:
             break
     else:
         break
