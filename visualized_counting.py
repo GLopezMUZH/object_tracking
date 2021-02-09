@@ -27,12 +27,12 @@ def get_coordinates_from_db(run_id, video, frame_nr):
     return c.fetchall()
 
 
-ct = Tracker(50, 25, 50, 0.25)
-
 cap = cv2.VideoCapture(PATH_TO_VIDEO)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+
 
 dateTimeObj = datetime.now()
 time_stamp = dateTimeObj.strftime("%d_%b_%Y_%H_%M_%S.%f")
@@ -40,6 +40,18 @@ time_stamp = dateTimeObj.strftime("%d_%b_%Y_%H_%M_%S.%f")
 skip_param = 1
 fps = fps / skip_param
 print(fps)
+
+# ct = Tracker(50, (180+fps)/20, 50, (300+fps)/2000)
+
+# dist_threshold, max_frame_skipped, max_trace_length, iou_threshold
+if fps == 200:
+    ct = Tracker(50, 20, 50, 0.5)
+if fps == 100:
+    ct = Tracker(100, 15, 50, 0.2)
+if fps == 50:
+    ct = Tracker(150, 10, 50, 0.005)
+if fps == 25:
+    ct = Tracker(250, 5, 50, 0.0025)
 
 outname = 'output_videos/bee_output_{}_{}fps.avi'.format(time_stamp, fps)
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
@@ -72,6 +84,7 @@ activity = ""
 c.execute("select max(frame) from coordinates where run_id = {}".format(RUN_ID))
 max_frame = c.fetchall()[0][0]
 
+
 for frame in tqdm(range(1, max_frame, skip_param)):
 
     ret, image_np = cap.read()
@@ -86,7 +99,7 @@ for frame in tqdm(range(1, max_frame, skip_param)):
             r_id, f_name, fr, b_id, xmin, xmax, ymin, ymax, X, Y, conf = coordinates[i]
             rects.append([xmin, ymin, xmax, ymax])
 
-        objects, tracks, D, iou_scores = ct.update(rects)
+        objects, tracks, D, iou_scores, match, no_match = ct.update(rects)
 
         for (objectID, coordinates) in objects.items():
             if len(traffic_dict) == 0:
@@ -150,8 +163,8 @@ for frame in tqdm(range(1, max_frame, skip_param)):
         cv2.imshow('', cv2.resize(image_np, (int(width), int(height))))
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
-        if frame == 200:
-            break
+        # if frame >= 57:
+        #     break
     else:
         break
 
