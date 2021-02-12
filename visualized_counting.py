@@ -163,8 +163,7 @@ for frame in tqdm(range(1, max_frame, skip_param)):
         cv2.imshow('', cv2.resize(image_np, (int(width), int(height))))
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
-        # if frame >= 57:
-        #     break
+
     else:
         break
 
