@@ -28,9 +28,6 @@ def get_coordinates_from_db(run_id, video, frame_nr):
         "select * from coordinates where run_id = {} and video = '{}' and frame = {}".format(run_id, video, frame_nr))
     return c.fetchall()
 
-
-ct = Tracker(50, 25, 50, 0.25)
-
 cap = cv2.VideoCapture(PATH_TO_VIDEO)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -39,9 +36,19 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 dateTimeObj = datetime.now()
 time_stamp = dateTimeObj.strftime("%d_%b_%Y_%H_%M_%S.%f")
 
-skip_param = 1
+skip_param = 8
 fps = fps / skip_param
 print(fps)
+
+# dist_threshold, max_frame_skipped, max_trace_length, iou_threshold
+if fps == 200:
+    ct = Tracker(50, 20, 50, 0.5)
+if fps == 100:
+    ct = Tracker(100, 15, 50, 0.2)
+if fps == 50:
+    ct = Tracker(150, 10, 50, 0.005)
+if fps == 25:
+    ct = Tracker(250, 5, 50, 0.0025)
 
 detections = []
 
@@ -74,18 +81,24 @@ all_tracks = {}
 in_counted = []
 out_counted = []
 
+total_matches, total_no_matches = [], []
+
 c.execute("select max(frame) from coordinates where run_id = {}".format(RUN_ID))
 max_frame = c.fetchall()[0][0]
 
 for frame in tqdm(range(1, max_frame, skip_param)):
     coordinates = get_coordinates_from_db(RUN_ID, ALT_PATH_TO_VIDEO, frame)
+    frame_counter += 1
 
     rects = []
     for i in range(len(coordinates)):
         r_id, f_name, fr, b_id, xmin, xmax, ymin, ymax, X, Y, conf = coordinates[i]
         rects.append([xmin, ymin, xmax, ymax])
 
-    objects, tracks = ct.update(rects)
+    objects, tracks, D, iou_scores, match, no_match = ct.update(rects)
+
+    total_matches.append(match)
+    total_no_matches.append(no_match)
 
     if PLOT:
         for key, values in tracks.items():
@@ -136,7 +149,7 @@ for frame in tqdm(range(1, max_frame, skip_param)):
             ("Out", bee_out),
             ("In", bee_in)]
 
-    if frame % 1000 == 0:
+    if frame_counter % 100 == 0:
         break
         print(info)
         print(traffic_dict)

@@ -29,7 +29,6 @@ class Tracker():
     def __init__(self, dist_threshold, max_frame_skipped, max_trace_length, iou_threshold):
         super(Tracker, self).__init__()
         self.dist_threshold = dist_threshold
-        self.max_frame_skipped = max_frame_skipped
         self.trace = deque(maxlen=max_trace_length)
         self.max_trace_length = max_trace_length
         self.iou_threshold = iou_threshold
@@ -39,8 +38,6 @@ class Tracker():
         self.objects = OrderedDict()
         self.objects_trace = OrderedDict()
         self.disappeared = OrderedDict()
-        self.mixed_up = OrderedDict()
-        self.max_leave_out = 2
         self.maxDisappeared = max_frame_skipped
 
     def get_iou_score(self, box1: np.ndarray, box2: np.ndarray):
@@ -80,7 +77,6 @@ class Tracker():
         self.objects[self.nextObjectID] = coordinates
         self.objects_trace[self.nextObjectID] = [self.get_centroid(coordinates)]
         self.disappeared[self.nextObjectID] = 0
-        self.mixed_up[self.nextObjectID] = 0
         self.nextObjectID += 1
 
 
@@ -88,7 +84,6 @@ class Tracker():
         del self.objects[objectID]
         del self.objects_trace[objectID]
         del self.disappeared[objectID]
-        del self.mixed_up[objectID]
 
     def get_centroid(self, coordinates):
         return (coordinates[0] + (coordinates[2] - coordinates[0]) // 2,
@@ -116,6 +111,10 @@ class Tracker():
         return I_order
 
     def update(self, rects):
+        no_match = []
+        match = []
+        D=[]
+        iou_scores = []
         detections = []
         inputCoordinates = np.array(rects)
         if len(self.tracks) == 0:
@@ -126,8 +125,6 @@ class Tracker():
                 self.register(inputCoordinates[i])
                 self.trackId += 1
                 self.tracks.append(track)
-                D=[]
-                iou_scores = []
 
         else:
             objectCoordinates = list(self.objects.values())
@@ -162,17 +159,18 @@ class Tracker():
                     else:
                         order.append(I_order[i])
 
-
             usedRows = set()
             usedCols = set()
+
+
 
             for col, row in enumerate(order):
                 if row in usedRows or col in usedCols:
                     continue
 
-
-
                 if iou_scores[row, col] >= self.iou_threshold or D[row, col] <= self.dist_threshold:
+                    # print('{} matched with {} with distance: {} and iou {}'.format(row, col, D[row,col], iou_scores[row,col]))
+                    match.append((D[row,col], iou_scores[row,col]))
                     objectID = objectIDs[row]
                     self.objects[objectID] = inputCoordinates[col]
                     self.objects_trace[objectID].append(self.get_centroid(inputCoordinates[col]))
@@ -181,13 +179,13 @@ class Tracker():
                     usedCols.add(col)
 
                 else:
+                    # print('{} NOT matched with {} with distance: {} and iou {}'.format(row, col, D[row,col], iou_scores[row,col]))
+                    no_match.append((D[row,col],iou_scores[row,col]))
+
                     pass
 
             unusedRows = set(range(0, iou_scores.shape[0])).difference(usedRows)
             unusedCols = set(range(0, iou_scores.shape[1])).difference(usedCols)
-
-
-
 
             if iou_scores.shape[0] >= iou_scores.shape[1]:
                 for row in unusedRows:
@@ -199,6 +197,6 @@ class Tracker():
                 for col in unusedCols:
                     self.register(inputCoordinates[col])
         if len(D)>1:
-            return self.objects, self.objects_trace, D, iou_scores
+            return self.objects, self.objects_trace, D[order], iou_scores[order], match, no_match
         else:
-            return self.objects, self.objects_trace, [],[]
+            return self.objects, self.objects_trace, [],[], [],[]
